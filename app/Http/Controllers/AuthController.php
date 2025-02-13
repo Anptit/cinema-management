@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Domain\Enums\UserRoles;
+use App\Domain\Models\Profile;
 use Illuminate\Http\Request;
 use App\Domain\Models\User;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreUserRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -42,23 +45,28 @@ class AuthController extends Controller
         ]);
     }
 
-    public function register(Request $request)
+    public function register(StoreUserRequest $request)
     {
-        $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'password' => 'required|string|min:6',
-        ]);
-
         $user = User::create([
-            'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'role' => $request->role ?? UserRoles::Customer->value
+        ]);
+
+        $profile = Profile::create([
+            'full_name' => $request->full_name,
+            'phone' => $request->phone,
+            'birthday' => $request->birthday,
+            'gender' => $request->gender,
+            'address' => $request->address,
+            'identity_card' => $request->identity_card,
+            'user_id' => $user->id
         ]);
 
         return response()->json([
             'message' => 'User created successfully',
-            'user' => $user
+            'user' => $user,
+            'profile' => $profile
         ]);
     }
 
