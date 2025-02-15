@@ -17,6 +17,7 @@ return new class extends Migration
             $table->integer('seat_id');
             $table->integer('movie_id');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

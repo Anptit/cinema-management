@@ -1,6 +1,5 @@
 <?php
 
-use App\Domain\Enums\UserRoles;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -12,8 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->enum('role', UserRoles::values())->default(UserRoles::Customer->value);
+        Schema::create('rooms', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->integer('total_seat');
+            $table->timestamps();
+            $table->softDeletes();
         });
     }
 
@@ -22,8 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('role');
-        });
+        Schema::dropIfExists('rooms');
     }
 };
