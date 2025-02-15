@@ -4,13 +4,13 @@ namespace App\Domain\Enums;
 
 enum UserRoles : string
 {
-    case Admin = 'admin';
-    case Customer = 'customer';
+    case ADMIN = 'admin';
+    case CUSTOMER = 'customer';
     public static function values()
     {
         return [
-            self::Admin->value,
-            self::Customer->value,
+            self::ADMIN->value,
+            self::CUSTOMER->value,
         ];
     }
 }

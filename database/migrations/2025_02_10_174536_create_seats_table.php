@@ -15,10 +15,11 @@ return new class extends Migration
     {
         Schema::create('seats', function (Blueprint $table) {
             $table->id();
-            $table->enum('status', SeatStatus::value())->default(SeatStatus::EMPTY->value);
+            $table->string('name')->unique();
             $table->enum('genre', SeatType::values())->nullable();
-            $table->integer('showtime_id');
+            $table->boolean('is_sold')->default(false);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

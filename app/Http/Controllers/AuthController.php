@@ -10,16 +10,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreUserRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
 use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth:api', ['except' => ['login','register','refresh','logout']]);
-    }
-
     public function login(Request $request)
     {
         $request->validate([
@@ -50,7 +44,7 @@ class AuthController extends Controller
         $user = User::create([
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => $request->role ?? UserRoles::Customer->value
+            'role' => $request->role ?? UserRoles::CUSTOMER->value
         ]);
 
         $profile = Profile::create([

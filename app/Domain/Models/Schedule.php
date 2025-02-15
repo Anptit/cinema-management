@@ -4,15 +4,14 @@ namespace App\Domain\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Schedule extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
     protected $table = "schedules";
-    protected $fillale = [
-        'sneaky_show',
-        'start_date',
-        'end_date',
+    protected $fillable = [
+        'show_date',
         'movie_id'
     ];
     public function showtimes()

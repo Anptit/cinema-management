@@ -4,20 +4,17 @@ namespace App\Domain\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Seat extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
     protected $table = 'seats';
     protected $fillable = [
+        'name',
         'genre',
-        'status',
-        'showtime_id'
+        'is_sold'
     ];
-    public function showtime()
-    {
-        return $this->belongsTo(ShowTime::class, 'showtime_id', 'id');
-    }
     public function ticket()
     {
         return $this->hasOne(Ticket::class, 'seat_id', 'id');

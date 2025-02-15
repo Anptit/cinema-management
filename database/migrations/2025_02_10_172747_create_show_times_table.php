@@ -14,11 +14,10 @@ return new class extends Migration
         Schema::create('showtimes', function (Blueprint $table) {
             $table->id();
             $table->dateTime('show_time')->nullable();
-            $table->integer('total_seat');
-            $table->string('screen');
-            $table->boolean('is_sold')->default(false);
             $table->integer('schedule_id');
+            $table->integer('room_id');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

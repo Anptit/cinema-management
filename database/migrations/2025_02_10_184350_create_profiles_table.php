@@ -22,6 +22,7 @@ return new class extends Migration
             $table->string('address')->nullable();
             $table->integer('user_id');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

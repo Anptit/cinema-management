@@ -6,16 +6,20 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class City extends Model
+class Room extends Model
 {
     use HasFactory, SoftDeletes;
-    protected $table = 'cities';
+    protected $table = 'rooms';
     protected $fillable = [
         'name',
-        'address'
+        'total_seat'
     ];
-    public function cinemas()
+    public function ticket()
     {
-        return $this->hasMany(Cinema::class, 'city_id', 'id');
+        return $this->hasMany(Ticket::class, 'room_id', 'id'); 
+    }
+    public function showtime()
+    {
+        return $this->hasOne(Showtime::class, 'room_id', 'id');
     }
 }
