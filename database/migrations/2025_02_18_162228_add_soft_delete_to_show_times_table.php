@@ -11,12 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('showtimes', function (Blueprint $table) {
-            $table->id();
-            $table->dateTime('show_time')->nullable();
-            $table->integer('schedule_id');
-            $table->integer('room_id');
-            $table->timestamps();
+        Schema::table('showtimes', function (Blueprint $table) {
+            $table->softDeletes();
         });
     }
 
@@ -25,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('show_times');
+        Schema::table('showtimes', function (Blueprint $table) {
+            $table->dropSoftDeletes();
+        });
     }
 };

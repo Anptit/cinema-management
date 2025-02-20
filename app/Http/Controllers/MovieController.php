@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Domain\Services\MovieService;
+use App\Http\Requests\FilterTimeRequest;
 use App\Http\Requests\StoreMovieRequest;
 use App\Http\Requests\UpdateMovieRequest;
 use Exception;
@@ -54,10 +55,10 @@ class MovieController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(string $id, Request $request)
     {
         try {
-            $movie = $this->movieService->getById((int)$id);
+            $movie = $this->movieService->getById((int)$id, $request->all());
             return response()->json([
                 'data' => $movie,
                 'message' => 'Movie retrieved successfully'

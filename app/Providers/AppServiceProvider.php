@@ -15,6 +15,11 @@ class AppServiceProvider extends ServiceProvider
             \App\Domain\Repositories\Movie\IMovieRepository::class,
             \App\Domain\Repositories\Movie\MovieRepository::class
         ); 
+
+        $this->app->singleton(
+            \App\Domain\Repositories\Showtime\IShowtimeRepository::class,
+            \App\Domain\Repositories\Showtime\ShowtimeRepository::class
+        );
     }
 
     /**
