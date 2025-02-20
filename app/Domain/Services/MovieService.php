@@ -14,21 +14,32 @@ use DatePeriod;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
-use function PHPUnit\Framework\isEmpty;
-
 class MovieService
 {
     public $movieRepository;
     public function __construct(IMovieRepository $movieRepository)
     {
-        $this->movieRepository = $movieRepository;   
+        $this->movieRepository = $movieRepository;
     }
 
     public function getAll(Request $request)
     {
-        $perPage = $request->query('per_page', 10);
-        $today = Carbon::now();
         $query = Movie::query();
+        $today = Carbon::now();
+        $orderBy = $request->input('order_by', 'asc');
+
+        if (!empty($request->input('search'))) {
+            $query->where('title', 'like', '%' . $request->query('search') . '%');
+        }
+
+        if (!empty($request->input('sortBy'))) {
+            $query->orderBy($request->query('sortBy'), $orderBy);
+        }
+
+        if (!empty($request->input('per_page'))) {
+            $perPage = $request->query('per_page');
+        }
+
         switch (strtolower($request->status)) {
             case ShowtimeStatus::SPECIAL->value:
                 $query->where('has_sneaky_show', '=', true)
@@ -42,14 +53,14 @@ class MovieService
                     ->whereDate('end_date', '>=', $today);
         }
 
-        return $query->paginate($perPage);
+        return $query->paginate($perPage ?? 10);
     }
 
     public function create(array $request)
     {
         $movie = Movie::create($request);
         $genres = explode(',', $request['genre']);
-        
+
         foreach ($genres as $genre) {
             $get_genre = Genre::whereRaw("LOWER(name) = ?", trim(strtolower($genre)))->first();
             if (!empty($get_genre)) {
@@ -59,14 +70,14 @@ class MovieService
                 $movie->genres()->attach($new_genre->id);
             }
         }
-        
+
         $start_date = date_create($request['release_date']);
         $end_date = date_create($request['end_date'])->modify('+1 day');
 
         $interval = DateInterval::createFromDateString('1 day');
-        $daterange = new DatePeriod($start_date, $interval ,$end_date);
+        $daterange = new DatePeriod($start_date, $interval, $end_date);
 
-        foreach($daterange as $date){
+        foreach ($daterange as $date) {
             Schedule::create([
                 'show_date' => $date->format('Y-m-d H:i:s'),
                 'movie_id' => $movie->id
@@ -79,14 +90,41 @@ class MovieService
         ];
     }
 
-    public function getById(int $id)
+    public function getById(int $id, array $request)
     {
-        $movie = Movie::with(['schedules' => function (Builder $query) {
-                    $query->whereDate('show_date', '>=', Carbon::now())
-                            ->orderBy('show_date', 'asc')
-                            ->with('showtimes');
-                }])
-                ->findOrFail($id);
+        $query = Movie::query()
+            ->where('movies.id', $id)
+            ->with(['schedules' => function ($scheduleQuery) use ($request) {
+              
+                if (!empty($request['date_search'])) {
+                    $date = Carbon::parse($request['date_search'])->format('Y-m-d');
+                    $scheduleQuery->whereDate('show_date', '=', $date);
+                }
+
+                $scheduleQuery->whereHas('showtimes', function ($showtimeQuery) use ($request) {
+                    if (!empty($request['time_search'])) {
+                        $time = Carbon::parse($request['time_search'])->format('H:i:s');
+                        $showtimeQuery->whereTime('show_time', '=', $time);
+                    }
+                });
+
+                $scheduleQuery->with(['showtimes' => function ($showtimeQuery) use ($request) { 
+                    
+                    if (!empty($request['time_search'])) {
+                        $time = Carbon::parse($request['time_search'])->format('H:i:s');
+                        $showtimeQuery->whereTime('show_time', '=', $time);
+                    }
+                }]);
+
+                $scheduleQuery->whereDate('show_date', '>=', Carbon::now()->format('Y-m-d'))
+                    ->orderBy('show_date', 'asc');
+            }]);
+
+        $movie = $query->first();
+
+        if (!$movie) {
+            throw new \Exception('Movie not found', 404);
+        }
 
         return $movie;
     }

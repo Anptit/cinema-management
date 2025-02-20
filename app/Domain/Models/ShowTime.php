@@ -2,6 +2,7 @@
 
 namespace App\Domain\Models;
 
+use Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -12,9 +13,6 @@ class ShowTime extends Model
     protected $table = 'showtimes';
     protected $fillable = [
         'show_time',
-        'total_seat',
-        'is_sold',
-        'screen',
         'schedule_id',
         'room_id'
     ];

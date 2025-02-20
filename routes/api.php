@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MovieController;
+use App\Http\Controllers\ShowTimeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -23,6 +24,6 @@ Route::prefix('auth')->group(function () {
 });
 
 Route::apiResources([
-    'movies' => MovieController::class
-    
+    'movies' => MovieController::class,
+    'showtimes' => ShowTimeController::class
 ]);
