@@ -88,6 +88,7 @@ class ShowtimeService implements IShowtimeService
         $schedule = Schedule::find($request['schedule_id'] ?? $showtime->schedule_id);
         $movie = Movie::find($schedule->movie_id);
         $checkShowtime = Showtime::where('schedule_id', $schedule->id)
+                                ->where('room_id', $request['room_id'] ?? $showtime->room_id)
                                 ->where(function (Builder $query) use ($movie, $request) {
                                     $query->where(function (Builder $subquery) use ($movie, $request) {
                                         $subquery->whereTime('show_time', '>', $request['show_time'])
