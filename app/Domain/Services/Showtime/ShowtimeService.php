@@ -5,12 +5,12 @@ namespace App\Domain\Services\Showtime;
 use App\Domain\Models\Movie;
 use App\Domain\Models\Room;
 use App\Domain\Models\Schedule;
+use App\Domain\Models\ScheduleShowtime;
 use App\Domain\Models\ShowTime;
 use App\Domain\Repositories\Showtime\IShowtimeRepository;
 use App\Domain\Services\Showtime\IShowtimeService;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\DB;
 
 class ShowtimeService implements IShowtimeService
 {
@@ -41,24 +41,65 @@ class ShowtimeService implements IShowtimeService
             return response()->json(['message' => 'Room not found'], 404);
         }
 
-        $existsShowtime = ShowTime::where('schedule_id', $request['schedule_id'])
-                            ->where('room_id', $request['room_id'])
-                            ->orderBy('show_time', 'desc')
-                            ->first();
+        $newShowTime = Carbon::parse($request['show_time']);
+        $movieDuration = $movie->running_time;
+        $newEndTime = $newShowTime->copy()->addMinutes($movieDuration);
 
-        $endtime = $this->calculateEndTime($existsShowtime);
+        $existsShowtime = ShowTime::where('room_id', $request['room_id'])
+        ->where('show_time', '=', $newShowTime)
+        ->whereHas('schedules', function ($query) use ($request) {
+            $query->where('schedule_id', $request['schedule_id']);
+        })
+        ->exists();
+
+    if ($existsShowtime) {
+        return response()->json(['message' => 'Showtime is exists'], 400);
+    }
+
+
+        // Kiểm tra suất chiếu trước đó trong cùng phòng
+        $prevShowtime = ShowTime::where('room_id', $request['room_id'])
+            ->whereHas('schedules', function ($query) use ($request) {
+                $query->where('schedule_id', $request['schedule_id']);
+            })
+            ->where('show_time', '<', $newShowTime)
+            ->orderBy('show_time', 'desc')
+            ->first();
+
+        if ($prevShowtime) {
+            $prevMovie = Movie::find($prevShowtime->schedules->first()->movie_id);
+            $prevEndTime = Carbon::parse($prevShowtime->show_time)->addMinutes($prevMovie->running_time);
+
+            // Nếu suất chiếu mới chồng lên suất chiếu trước đó → Không cho phép
+            if ($newShowTime < $prevEndTime) {
+                return response()->json(['message' => 'Thời gian chiếu mới bị chồng lên suất chiếu trước đó'], 400);
+            }
+        }
+
+        $nextShowtime = ShowTime::where('room_id', $request['room_id'])
+            ->whereHas('schedules', function ($query) use ($request) {
+                $query->where('schedule_id', $request['schedule_id']);
+            })
+            ->where('show_time', '>', $newShowTime)
+            ->orderBy('show_time', 'asc')
+            ->first();
+
+        if ($nextShowtime) {
+            $nextStartTime = Carbon::parse($nextShowtime->show_time);
+
+            // Nếu suất chiếu mới kết thúc sau khi suất chiếu tiếp theo bắt đầu → Không cho phép
+            if ($newEndTime > $nextStartTime) {
+                return response()->json(['message' => 'Thời gian chiếu mới bị chồng lên suất chiếu sau đó'], 400);
+            }
+        }
         
-        if ($endtime < date_create($request['show_time'])->format('H:i:s')) {
-            $showtime = ShowTime::create($request);
-        } else {
-            dd($endtime, date_create($request['show_time']));
-            return response()->json(['message' => 'Showtime already exists'], 400);
-        }
-
-        if (empty($existsShowtime)) {
-            $showtime = ShowTime::create($request);
-        }
-
+        $showtime = ShowTime::create([
+            'show_time' => $newShowTime,
+            'room_id' => $request['room_id']
+        ]);
+    
+        $schedule->showtimes()->attach($showtime->id);
+    
         return $showtime;
     }
 
@@ -126,11 +167,12 @@ class ShowtimeService implements IShowtimeService
         return $showtime;
     }
 
-    public function calculateEndTime(ShowTime $showtime)
+    public function calculateEndTime(ShowTime $showtime, int $scheduleId)
     {
-        $formatTime = date_create($showtime->show_time);
-        $getRunningTime = $this->showtimeRepository->getRunningTime($showtime->schedule_id)->running_time;
+        $schedule = Schedule::find($scheduleId);
+        $formatTime = date_create(date_create($schedule->show_date)->format('Y-m-d') . ' ' . $showtime->show_time);
+        $getRunningTime = $this->showtimeRepository->getRunningTime($scheduleId)->running_time;
 
-        return $formatTime->modify("+$getRunningTime minutes")->format('H:i:s');
+        return $formatTime->modify("+$getRunningTime minutes");
     }
 }

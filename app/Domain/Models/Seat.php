@@ -13,7 +13,8 @@ class Seat extends Model
     protected $fillable = [
         'name',
         'genre',
-        'is_sold'
+        'is_sold',
+        'room_id'
     ];
     public function ticket()
     {

@@ -2,6 +2,7 @@
 
 namespace App\Domain\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -12,14 +13,22 @@ class Room extends Model
     protected $table = 'rooms';
     protected $fillable = [
         'name',
-        'total_seat'
+        'total_seat',
+        'available_seats'
     ];
-    public function ticket()
+    public function seat()
     {
-        return $this->hasMany(Ticket::class, 'room_id', 'id'); 
+        return $this->hasMany(Seat::class, 'room_id', 'id'); 
     }
-    public function showtime()
+    public function showtimes()
     {
-        return $this->hasOne(Showtime::class, 'room_id', 'id');
+        return $this->hasMany(Showtime::class, 'room_id', 'id');
+    }
+    public function name()
+    {
+        return Attribute::make(
+            get: fn (string $value) => strtoupper($value),
+            set: fn (string $value) => strtolower($value)
+        );
     }
 }

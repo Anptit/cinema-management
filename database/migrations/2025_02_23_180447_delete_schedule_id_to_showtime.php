@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('showtimes', function (Blueprint $table) {
-            $table->time('show_time')->change();
+            $table->dropColumn('schedule_id');
         });
     }
 
@@ -21,8 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('showtimes', function (Blueprint $table) {
-            $table->dateTime('show_time')->change();
+        Schema::table('shohwtimes', function (Blueprint $table) {
+            $table->integer('schedule_id')->change();
         });
     }
 };

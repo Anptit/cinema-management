@@ -14,8 +14,8 @@ class ShowtimeRepository extends RepositoryBase implements IShowtimeRepository
 
     public function getRunningTime(int $scheduleId)
     {
-        return Movie::leftJoin('schedules', 'schedules.movie_id', '=', 'movies.id')
-                    ->where('schedules.id', $scheduleId)
+        return Movie::join('schedules', 'schedules.movie_id', '=', 'movies.id')
+                    ->where('schedules.id', '=', $scheduleId)
                     ->first();
     }
 }

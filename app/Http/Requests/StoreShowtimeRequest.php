@@ -22,8 +22,8 @@ class StoreShowtimeRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'show_time' => ['required', 'date_format:H:i:s', 'unique:showtimes,show_time'],
-            'schedule_id' => ['required', 'integer', 'exists:schedules,id'],
+            'show_time' => ['required', 'date'],
+            'schedule_id' => ['required', 'integer'],
             'room_id' => ['required', 'integer', 'exists:rooms,id'],
         ];
     }
