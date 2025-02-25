@@ -12,9 +12,9 @@ class Ticket extends Model
     protected $table = 'tickets';
     protected $fillable = [
         'price',
+        'user_id',
         'seat_id',
         'movie_id',
-        'room_id'
     ];
     public function seat()
     {

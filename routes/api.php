@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\RoomController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\MovieController;
@@ -25,5 +26,6 @@ Route::prefix('auth')->group(function () {
 
 Route::apiResources([
     'movies' => MovieController::class,
-    'showtimes' => ShowTimeController::class
+    'showtimes' => ShowTimeController::class,
+    'rooms' => RoomController::class
 ]);
